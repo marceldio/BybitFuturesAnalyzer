@@ -34,8 +34,8 @@ def calculate_own_movement(eth_data, btc_data):
     eth_df = pd.DataFrame(eth_data)
     btc_df = pd.DataFrame(btc_data)
 
-    eth_changes = eth_df['close'].pct_change().dropna()
-    btc_changes = btc_df['close'].pct_change().dropna()
+    eth_changes = eth_df["close"].pct_change().dropna()
+    btc_changes = btc_df["close"].pct_change().dropna()
 
     if len(eth_changes) < 2 or len(btc_changes) < 2:
         return None
@@ -54,10 +54,7 @@ def calculate_own_movement(eth_data, btc_data):
 def send_telegram_message(message):
     """Отправляет сообщение в Telegram."""
     url = f"https://api.telegram.org/bot{telegram_token}/sendMessage"
-    payload = {
-        "chat_id": telegram_chat_id,
-        "text": message
-    }
+    payload = {"chat_id": telegram_chat_id, "text": message}
     response = requests.post(url, data=payload)
     if response.status_code != 200:
         print(f"Ошибка отправки сообщения в Telegram: {response.text}")
@@ -72,7 +69,9 @@ def monitor_price():
         residuals = calculate_own_movement(eth_data, btc_data)
 
         if residuals is not None and len(residuals) > 1:
-            price_change = (residuals.iloc[-1] - residuals.iloc[0]) / abs(residuals.iloc[0]) * 100
+            price_change = (
+                (residuals.iloc[-1] - residuals.iloc[0]) / abs(residuals.iloc[0]) * 100
+            )
 
             if abs(price_change) >= 1:
                 message = f"[{datetime.now()}] Внимание! Собственное изменение цены ETHUSDT: {price_change:.2f}%"
@@ -84,4 +83,3 @@ def monitor_price():
 
 if __name__ == "__main__":
     monitor_price()
-
