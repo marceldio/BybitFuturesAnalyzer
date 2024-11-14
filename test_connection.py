@@ -13,6 +13,7 @@ load_dotenv()
 api_key = os.getenv("BYBIT_API_KEY")
 api_secret = os.getenv("BYBIT_API_SECRET")
 
+
 def get_wallet_balance():
     """Получает баланс кошелька с использованием Bybit V5 API."""
     base_url = "https://api-testnet.bybit.com"
@@ -32,9 +33,7 @@ def get_wallet_balance():
 
     # Создаем подпись
     signature = hmac.new(
-        api_secret.encode('utf-8'),
-        query_string.encode('utf-8'),
-        hashlib.sha256
+        api_secret.encode("utf-8"), query_string.encode("utf-8"), hashlib.sha256
     ).hexdigest()
 
     # Добавляем подпись к параметрам
@@ -57,6 +56,7 @@ def get_wallet_balance():
         print(f"HTTP ошибка: {http_err}")
     except Exception as err:
         print(f"Другая ошибка: {err}")
+
 
 if __name__ == "__main__":
     get_wallet_balance()

@@ -23,11 +23,11 @@ def get_price_changes(data):
     if not data:
         raise ValueError("Нет данных для анализа")
     df = pd.DataFrame(data)
-    if 'close' not in df.columns:
+    if "close" not in df.columns:
         raise KeyError("'close' column is missing in the data.")
-    df['close'] = df['close'].astype(float)
-    df['price_change'] = df['close'].pct_change()
-    return df['price_change'].dropna()
+    df["close"] = df["close"].astype(float)
+    df["price_change"] = df["close"].pct_change()
+    return df["price_change"].dropna()
 
 
 def calculate_correlation(eth_changes, btc_changes):
@@ -67,11 +67,17 @@ def fetch_data_in_chunks(api, symbol, interval, start_time, end_time, chunk_hour
     while current_time < end_time:
         next_time = min(current_time + chunk_seconds, end_time)
         try:
-            chunk_data = api.get_historical_data(symbol, interval, current_time, next_time)
+            chunk_data = api.get_historical_data(
+                symbol, interval, current_time, next_time
+            )
             if not chunk_data:
-                print(f"Пустой ответ от API для символа {symbol} в интервале с {current_time} по {next_time}.")
+                print(
+                    f"Пустой ответ от API для символа {symbol} в интервале с {current_time} по {next_time}."
+                )
             else:
-                print(f"Получены данные для символа {symbol}: {chunk_data[:2]}...")  # Показываем первые две записи
+                print(
+                    f"Получены данные для символа {symbol}: {chunk_data[:2]}..."
+                )  # Показываем первые две записи
             data.extend(chunk_data)
             current_time = next_time
         except Exception as e:
@@ -103,4 +109,3 @@ if __name__ == "__main__":
         plot_changes(eth_changes, btc_changes, residuals)
     else:
         print("Недостаточно данных для анализа.")
-
