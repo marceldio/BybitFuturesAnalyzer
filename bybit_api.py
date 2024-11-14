@@ -1,5 +1,3 @@
-# bybit_api.py
-
 import requests
 import time
 import hmac
