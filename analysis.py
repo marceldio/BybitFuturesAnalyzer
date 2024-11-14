@@ -4,13 +4,18 @@ from datetime import datetime, timedelta
 from sklearn.linear_model import LinearRegression
 from bybit_api import BybitAPI
 import os
+from dotenv import load_dotenv
+
+# Загружаем переменные из .env
+load_dotenv()
 
 # Подключаемся к тестовой среде с ключами
+# Получаем API ключи из переменных окружения
 api_key = os.getenv("BYBIT_API_KEY")
 api_secret = os.getenv("BYBIT_API_SECRET")
 
+# Инициализируем API с ключами
 api = BybitAPI(api_key, api_secret, testnet=True)
-
 
 
 def get_price_changes(data):
@@ -77,7 +82,6 @@ def fetch_data_in_chunks(api, symbol, interval, start_time, end_time, chunk_hour
 
 # Основной код для анализа
 if __name__ == "__main__":
-    api = BybitAPI()
     now = int(datetime.now().timestamp())
     one_day_ago = int((datetime.now() - timedelta(days=1)).timestamp())
 
@@ -99,3 +103,4 @@ if __name__ == "__main__":
         plot_changes(eth_changes, btc_changes, residuals)
     else:
         print("Недостаточно данных для анализа.")
+

@@ -1,7 +1,10 @@
+# bybit_api.py
+
 import requests
 import time
-import os
-
+import hmac
+import hashlib
+from urllib.parse import urlencode
 
 class BybitAPI:
     def __init__(self, api_key: str, api_secret: str, testnet: bool = True):
@@ -11,28 +14,52 @@ class BybitAPI:
         self.session = requests.Session()
         self.session.headers.update({"Content-Type": "application/json"})
 
-    def get_historical_data(self, symbol: str, interval: str, start_time: int, end_time: int, max_retries: int = 5):
-        """Получает исторические данные свечей с поддержкой API-ключей и измененной базовой URL."""
-        endpoint = "/v2/public/kline/list"
+    def get_historical_data(self, symbol: str, interval: str, start_time: int, end_time: int):
+        """Получает исторические данные свечей с использованием актуального эндпоинта V5."""
+        endpoint = "/v5/market/kline"
+        url = self.base_url + endpoint
+
         params = {
+            "category": "linear",
             "symbol": symbol,
             "interval": interval,
-            "from": start_time,
-            "to": end_time,
+            "start": start_time * 1000,  # Время в миллисекундах
+            "end": end_time * 1000,      # Время в миллисекундах
             "api_key": self.api_key,
-            # Добавим другие параметры аутентификации, если требуется
+            "timestamp": str(int(time.time() * 1000)),
         }
 
-        retries = 0
-        while retries < max_retries:
-            response = self.session.get(self.base_url + endpoint, params=params)
-            if response.status_code == 429:
-                wait_time = 2 ** retries
-                print(f"Ошибка 429: Превышен лимит запросов. Повтор через {wait_time} секунд...")
-                time.sleep(wait_time)
-                retries += 1
-            else:
-                response.raise_for_status()
-                return response.json().get("result", [])
+        query_string = urlencode(sorted(params.items()))
+        signature = hmac.new(
+            self.api_secret.encode('utf-8'),
+            query_string.encode('utf-8'),
+            hashlib.sha256
+        ).hexdigest()
 
-        raise Exception("Превышено количество попыток при запросе данных с Bybit API")
+        params["sign"] = signature
+
+        response = self.session.get(url, params=params)
+        response.raise_for_status()
+        data = response.json()
+
+        # Извлекаем данные из 'list'
+        if "result" in data and "list" in data["result"]:
+            candles = data["result"]["list"]
+            # Преобразуем в формат, ожидаемый остальной программой
+            formatted_data = [
+                {
+                    "timestamp": int(candle[0]),
+                    "open": float(candle[1]),
+                    "high": float(candle[2]),
+                    "low": float(candle[3]),
+                    "close": float(candle[4]),
+                    "volume": float(candle[5]),
+                    "turnover": float(candle[6])
+                }
+                for candle in candles
+            ]
+            return formatted_data
+        else:
+            print("Ошибка: Ожидаемого поля 'list' нет в ответе.")
+            print("Ответ:", data)
+            return []
