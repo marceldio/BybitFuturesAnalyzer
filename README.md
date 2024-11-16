@@ -1,5 +1,5 @@
 Bybit Futures Analyzer by Marcel Dio
-# BybitFuturesAnalyzer
+# Bybit Futures Analyzer
 Приложение для анализа цен фьючерса.
 
 1. Определить собственные движения цены фьючерса ETHUSDT, 
